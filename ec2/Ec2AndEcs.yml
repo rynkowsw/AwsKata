@@ -95,7 +95,6 @@ Resources:
                 enabled: true
                 ensureRunning: true
     Properties:
-      IamInstanceProfile: [ !Ref memberRoleInstanceProfile ]
       ImageId: !Ref pClusterMemberAmiId
       InstanceMonitoring: false
       InstanceType: !Ref ec2InstanceType
@@ -128,45 +127,6 @@ Resources:
               --stack ${AWS::StackName} \
               --resource ec2AutoScalingGroup \
               --region ${AWS::Region}
-
-  rEcMemberRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub '${AWS::StackName}-ec2-xxx-i-role'
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Sid: trustForEc2
-            Principal:
-              Service: ec2.amazonaws.com
-            Action: sts:AssumeRole
-            Effect: Allow
-      Policies:
-        - PolicyName: !Sub '${AWS::StackName}--ec2-xxx-policy'
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Sid: lookingForMembers
-                Action:
-                  - ec2:DescribeInstances
-                Resource: '*'
-                Effect: Allow
-              - Sid: pullingFromEcr
-                Action:
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:BatchGetImage
-                  - ecr:DescribeRepositories
-                  - ecr:GetAuthorizationToken
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:ListImages
-                Effect: Allow
-                Resource: '*'
-
-  memberRoleInstanceProfile:
-      Type: AWS::IAM::InstanceProfile
-      Properties:
-        Path: /
-        Roles: [ !Ref rEcMemberRole ]
 
   ec2AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
